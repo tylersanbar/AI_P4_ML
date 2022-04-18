@@ -27,12 +27,12 @@ class DigitClassificationModel(object):
         output_size = 10
         #dataset.get_validation_accuracy()
         #Hidden Layer Size - (10, 400)
-        hidden_layer_size = 150
+        hidden_layer_size = 300
         self.num_hidden_layers = 2
         #Batch Size - (1, dataset size) 
-        self.batch_size = 100
+        self.batch_size = 500
         #Learning Rate - (0.001, 1.0)
-        self.alpha = .005
+        self.alpha = .5
 
         self.hidden_layers = []
         for layer in range(self.num_hidden_layers):
@@ -100,7 +100,7 @@ class DigitClassificationModel(object):
         """
         "*** YOUR CODE HERE ***"
         loss = nn.SoftmaxLoss(self.run(x), y)
-        #print(nn.as_scalar(loss))
+        print(nn.as_scalar(loss))
         return loss
 
     def train(self, dataset):
