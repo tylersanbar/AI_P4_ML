@@ -4,7 +4,7 @@ from functools import partial
 
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.normalization import BatchNormalization
+from keras.layers.normalization import batch_normalization
 from keras.models import Model
 from keras.regularizers import l2
 
@@ -28,7 +28,7 @@ def DarknetConv2D_BN_Leaky(*args, **kwargs):
     no_bias_kwargs.update(kwargs)
     return compose(
         DarknetConv2D(*args, **no_bias_kwargs),
-        BatchNormalization(),
+        batch_normalization(),
         LeakyReLU(alpha=0.1))
 
 

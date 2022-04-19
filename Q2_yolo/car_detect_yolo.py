@@ -12,11 +12,11 @@ import PIL
 from PIL import ImageFont, ImageDraw, Image
 import tensorflow as tf
 from tensorflow.python.framework.ops import EagerTensor
-from yolo_utils import  read_classes, read_anchors,scale_boxes, preprocess_image
+from yolo_utils import  read_classes, read_anchors,scale_boxes, preprocess_image, draw_boxes
 from tensorflow.keras.models import load_model
 from yad2k.models.keras_yolo import yolo_head
 from yad2k.utils.draw_boxes import get_colors_for_classes
-
+os.add_dll_directory("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.6/bin") 
 # UNQ_C1 (UNIQUE CELL IDENTIFIER, DO NOT EDIT)
 # GRADED FUNCTION: yolo_filter_boxes
 
@@ -42,24 +42,25 @@ def yolo_filter_boxes(boxes, box_confidence, box_class_probs, threshold = .6):
     ### START CODE HERE
     # Step 1: Compute box scores
     ##(≈ 1 line)
-    box_scores = None
+    ##score c,i = pc * ci
+    box_scores = box_class_probs * box_confidence
 
     # Step 2: Find the box_classes using the max box_scores, keep track of the corresponding score
     ##(≈ 2 lines)
     # IMPORTANT: set axis to -1
-    box_classes = None
-    box_class_scores = None
+    box_classes = tf.math.argmax(box_scores, axis=-1)
+    box_class_scores = tf.math.reduce_max(box_scores, axis=-1)
     
     # Step 3: Create a filtering mask based on "box_class_scores" by using "threshold". The mask should have the
     # same dimension as box_class_scores, and be True for the boxes you want to keep (with probability >= threshold)
     ## (≈ 1 line)
-    filtering_mask = None
+    filtering_mask = box_class_scores > threshold
     
     # Step 4: Apply the mask to box_class_scores, boxes and box_classes
     ## (≈ 3 lines)
-    scores = None
-    boxes = None
-    classes = None
+    scores = tf.boolean_mask(box_class_scores, filtering_mask)
+    boxes = tf.boolean_mask(boxes, filtering_mask)
+    classes = tf.boolean_mask(box_classes, filtering_mask)
     ### END CODE HERE
     
     return scores, boxes, classes
@@ -200,6 +201,11 @@ def yolo_eval(yolo_outputs, image_shape = (720, 1280), max_boxes=10, score_thres
 
 
 def predict(image_file):
+    # ADD THESE AT TOP
+    class_names = read_classes("model_data/coco_classes.txt")
+    anchors = read_anchors("model_data/yolo_anchors.txt")
+    model_image_size = (608, 608) # Same as yolo_model input layer size
+    yolo_model = load_model("model_data/", compile=False)
     """
     Runs the graph to predict boxes for "image_file". Prints and plots the predictions.
     
